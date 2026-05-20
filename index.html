@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>探視 & 返家預約系統｜全日型身障機構</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;background:#F0F4F8;color:#1A2B3C;min-height:100vh}
+button{cursor:pointer;font-family:inherit}
+input,select,textarea{font-family:inherit}
+
+/* Layout */
+.app{max-width:1000px;margin:0 auto;padding-bottom:60px}
+
+/* Header */
+.header{background:linear-gradient(135deg,#1B5E75 0%,#2A7A5C 100%);color:#fff;padding:20px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px #0003}
+.header-left .sub{font-size:11px;opacity:.7;letter-spacing:.12em;margin-bottom:3px}
+.header-left .title{font-size:22px;font-weight:900;letter-spacing:-.02em}
+.header-right{display:flex;align-items:center;gap:10px}
+.user-badge{background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);border-radius:20px;padding:5px 14px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px}
+.super-tag{background:#F59E0B;color:#fff;font-size:10px;font-weight:900;padding:2px 7px;border-radius:99px}
+.btn-hdr{background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.35);border-radius:10px;color:#fff;padding:7px 16px;font-size:13px;font-weight:700;transition:background .2s}
+.btn-hdr:hover{background:rgba(255,255,255,.28)}
+
+/* Stats */
+.stats-bar{background:linear-gradient(135deg,#155063,#1e5e42);padding:14px 32px;display:flex;gap:12px}
+.stat-card{flex:1;background:rgba(255,255,255,.12);border-radius:12px;padding:12px 16px;text-align:center;color:#fff}
+.stat-card .val{font-size:26px;font-weight:900}
+.stat-card .lbl{font-size:11px;opacity:.8;margin-top:2px}
+
+/* Tab nav */
+.tab-nav{display:flex;background:#fff;border-bottom:2px solid #E8EDF2;padding:0 24px;position:sticky;top:62px;z-index:90;box-shadow:0 2px 8px #0001;overflow-x:auto;gap:4px}
+.tab-btn{border:none;background:none;padding:14px 20px;font-size:14px;font-weight:700;color:#999;white-space:nowrap;position:relative;transition:color .2s;display:flex;align-items:center;gap:6px}
+.tab-btn.active{color:#1B5E75}
+.tab-btn.active::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:3px;background:#1B5E75;border-radius:3px 3px 0 0}
+
+/* Content */
+.content{padding:28px 32px}
+
+/* Cards */
+.card{background:#fff;border-radius:16px;box-shadow:0 2px 16px #00000008;padding:22px 26px;margin-bottom:14px;border:1px solid #EEF2F7;transition:box-shadow .2s}
+.card:hover{box-shadow:0 4px 24px #00000012}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+
+/* Form */
+.form-wrap{max-width:540px}
+.form-group{margin-bottom:18px}
+label.lbl{display:block;font-size:13px;font-weight:700;color:#555;margin-bottom:6px}
+input[type=text],input[type=email],input[type=tel],input[type=date],input[type=time],input[type=password],select,textarea{width:100%;border:1.5px solid #DDE3EC;border-radius:10px;padding:10px 14px;font-size:15px;background:#FAFBFD;color:#1A2B3C;outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{border-color:#2D8EAA;box-shadow:0 0 0 3px #2D8EAA18;background:#fff}
+textarea{resize:vertical;min-height:80px}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* Type toggle */
+.type-toggle{display:flex;gap:12px;margin-bottom:22px}
+.type-btn{flex:1;padding:13px 0;border-radius:12px;border:2px solid #DDE3EC;background:#fff;color:#AAA;font-weight:800;font-size:15px;transition:all .2s}
+.type-btn.active-visit{border-color:#2D8EAA;background:#E8F4F8;color:#2D8EAA}
+.type-btn.active-home{border-color:#3A9B6F;background:#F0F7EE;color:#3A9B6F}
+
+/* Buttons */
+.btn-primary{background:linear-gradient(135deg,#1B5E75,#2A7A5C);color:#fff;border:none;border-radius:12px;padding:13px 28px;font-size:15px;font-weight:800;width:100%;letter-spacing:.02em;transition:opacity .2s}
+.btn-primary:hover{opacity:.88}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{background:#fff;border:1.5px solid #DDE3EC;border-radius:10px;padding:9px 20px;font-size:14px;font-weight:700;color:#666;margin-top:10px;width:100%}
+.btn-sm{border:none;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer}
+.btn-del{background:#FEF2F2;color:#EF4444}
+.btn-pin{background:none;border:none;border-radius:8px;padding:6px 10px;font-size:16px;cursor:pointer}
+.btn-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.btn-refresh{background:#E8F4F8;border:1.5px solid #2D8EAA30;color:#2D8EAA;border-radius:10px;padding:7px 16px;font-size:13px;font-weight:700}
+
+/* Tags */
+.tag{display:inline-flex;align-items:center;gap:4px;border-radius:99px;padding:3px 12px;font-size:13px;font-weight:700}
+.tag-visit{background:#E8F4F8;color:#2D8EAA}
+.tag-home{background:#F0F7EE;color:#3A9B6F}
+
+/* Info boxes */
+.warn-box{background:#FFF8E7;border-radius:10px;padding:10px 14px;font-size:13px;color:#B45309;margin-bottom:16px;border:1px solid #FCD34D40}
+.info-box{background:#E8F4F8;border-radius:10px;padding:10px 14px;font-size:13px;color:#1B5E75;margin-bottom:16px;border:1px solid #2D8EAA30}
+.success-box{background:#D1FAE5;border-radius:12px;padding:20px;text-align:center;margin-bottom:20px}
+.error-msg{background:#FEF2F2;border-radius:8px;padding:9px 14px;font-size:13px;color:#DC2626;margin-bottom:14px;border:1px solid #FCA5A560}
+
+/* Filter */
+.filter-row{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.filter-pill{border:1.5px solid #DDE3EC;background:#fff;color:#888;border-radius:99px;padding:5px 16px;font-size:13px;font-weight:700;transition:all .2s}
+.filter-pill.active{border-color:#1B5E75;background:#E8F4F8;color:#1B5E75}
+
+/* Auth */
+.auth-wrap{min-height:calc(100vh - 62px);display:flex;align-items:center;justify-content:center;padding:32px 16px}
+.auth-card{background:#fff;border-radius:20px;box-shadow:0 8px 40px #0002;padding:40px 36px;width:100%;max-width:440px}
+.auth-icon{font-size:52px;text-align:center;margin-bottom:10px}
+.auth-title{font-size:22px;font-weight:900;text-align:center;color:#1A2B3C;margin-bottom:4px}
+.auth-sub{font-size:13px;color:#AAA;text-align:center;margin-bottom:24px}
+.pw-wrap{position:relative}
+.pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);border:none;background:none;font-size:16px;color:#AAA;padding:0}
+.auth-link{color:#2D8EAA;font-weight:800;text-decoration:underline;background:none;border:none;font-size:13px;cursor:pointer}
+
+/* Notice */
+.notice-card{border-left:4px solid #2D8EAA}
+.notice-card.pinned{border-left-color:#F59E0B}
+.notice-content{white-space:pre-line;font-size:14px;color:#555;line-height:1.85;margin-top:10px}
+
+/* Schedule */
+.day-group{margin-bottom:24px}
+.day-label{font-size:13px;font-weight:800;color:#2D8EAA;letter-spacing:.05em;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid #E8EDF2}
+.sched-row{display:flex;align-items:center;gap:14px;padding:10px 16px;background:#fff;border-radius:10px;margin-bottom:8px;border:1px solid #EEF2F7}
+.sched-time{font-size:13px;color:#888;margin-left:auto}
+
+/* Booking info */
+.booking-info{font-size:14px;color:#555;line-height:1.9;margin-top:10px}
+.booking-meta{display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap}
+
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:#00000060;z-index:500;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:#fff;border-radius:20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 12px 50px #0004}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 24px 14px;border-bottom:1px solid #F0F0F0;position:sticky;top:0;background:#fff;border-radius:20px 20px 0 0}
+.modal-head h3{font-size:17px;font-weight:800;flex:1;margin-right:12px}
+.modal-close{border:none;background:#F5F5F5;border-radius:99px;width:32px;height:32px;font-size:16px;color:#666;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.modal-body{padding:20px 24px 28px}
+
+/* Toast */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1A2B3C;color:#fff;border-radius:12px;padding:12px 24px;font-size:14px;font-weight:700;box-shadow:0 4px 20px #0004;z-index:900;white-space:nowrap;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* Misc */
+.empty{text-align:center;color:#CCC;padding:60px 20px;font-size:15px}
+.empty .emoji{font-size:40px;margin-bottom:12px}
+.page-title{font-size:20px;font-weight:900;color:#1A2B3C;margin-bottom:6px}
+.page-sub{font-size:13px;color:#AAA;margin-bottom:24px}
+.spin{display:inline-block;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading{display:flex;align-items:center;justify-content:center;gap:10px;color:#AAA;padding:40px;font-size:14px}
+.divider{border:none;border-top:1.5px solid #EEF2F7;margin:6px 0 14px}
+
+@media(max-width:640px){
+  .header{padding:14px 16px}
+  .header-left .title{font-size:17px}
+  .stats-bar{padding:10px 14px;gap:8px}
+  .content{padding:16px 14px}
+  .tab-nav{padding:0 8px;top:55px}
+  .tab-btn{padding:11px 12px;font-size:12px}
+  .row-2{grid-template-columns:1fr}
+  .card-grid{grid-template-columns:1fr}
+  .auth-card{padding:24px 18px}
+  .card{padding:16px 18px}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  ★ 請將 Google Apps Script 部署後的 URL 貼在這裡 ★
+// ══════════════════════════════════════════════════════════
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyLh3rJW6c2K3BjGFCB062lvl1b_5eIP1ggJ7e0zp_2NrE0cfMsRNnhTimtaav3Z8ml3w/exec";
+// ══════════════════════════════════════════════════════════
+
+// ── JSONP 呼叫（GET，解決跨域問題） ──────────────────────
+let _cbCounter = 0;
+function jsonp(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = "__gasCb" + (++_cbCounter);
+    const timeout = setTimeout(() => {
+      delete window[cbName];
+      reject(new Error("timeout"));
+    }, 15000);
+
+    window[cbName] = (data) => {
+      clearTimeout(timeout);
+      delete window[cbName];
+      const s = document.getElementById("_jsonp_" + cbName);
+      if (s) s.remove();
+      resolve(data);
+    };
+
+    const qs = new URLSearchParams({ ...params, callback: cbName }).toString();
+    const url = GAS_URL + "?" + qs;
+    const script = document.createElement("script");
+    script.id = "_jsonp_" + cbName;
+    script.src = url;
+    script.onerror = () => { clearTimeout(timeout); delete window[cbName]; reject(new Error("network error")); };
+    document.head.appendChild(script);
+  });
+}
+
+// ── POST（用於寫入，透過 no-cors fetch → 改以 GET+JSONP 代替） ──
+// GAS doGet 同時支援讀寫操作（傳入 action 參數即可）
+async function gasGet(params) {
+  try { return await jsonp(params); }
+  catch(e) { console.error("GAS error:", e); return { ok:false, error: e.message }; }
+}
+
+// ── State ─────────────────────────────────────────────────
+const S = {
+  screen: "parent",
+  parentTab: "book",
+  adminTab: "bookings",
+  currentUser: null,
+  bookings: [],
+  notices: [],
+  loading: false,
+  toast: null,
+  toastTimer: null,
+  modal: null,
+  bookFilter: "all",
+  bookType: "visit",
+  formData: { child:"", parentName:"", date:"", startTime:"", endTime:"", returnDate:"", note:"" },
+};
+
+// ── Data load ─────────────────────────────────────────────
+async function loadAll() {
+  S.loading = true; render();
+  const [b, n] = await Promise.all([
+    gasGet({ action:"getBookings" }),
+    gasGet({ action:"getNotices" }),
+  ]);
+  if (b && b.ok) S.bookings = b.data || [];
+  if (n && n.ok) S.notices  = n.data || [];
+  S.loading = false; render();
+}
+async function loadNotices() {
+  const n = await gasGet({ action:"getNotices" });
+  if (n && n.ok) { S.notices = n.data || []; render(); }
+}
+async function loadBookings() {
+  const b = await gasGet({ action:"getBookings" });
+  if (b && b.ok) { S.bookings = b.data || []; render(); }
+}
+
+// ── Helpers ───────────────────────────────────────────────
+function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;") }
+function today(){ const d=new Date(); return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}` }
+function p2(n){ return String(n).padStart(2,"0") }
+function fmtDate(s){ if(!s)return""; const d=new Date(s); return isNaN(d)?s:d.toLocaleDateString("zh-TW",{year:"numeric",month:"2-digit",day:"2-digit"}) }
+function isLunch(t){ if(!t)return false; const[h,m]=t.split(":").map(Number); return h*60+m>=720&&h*60+m<810 }
+function isFuture(s){ return s&&new Date(s)>=new Date(today()) }
+function tagHTML(type){ return type==="visit"?'<span class="tag tag-visit">👁 探視</span>':'<span class="tag tag-home">🏠 返家</span>' }
+function isSA(){ return S.currentUser?.role==="superadmin" }
+
+// ── Toast ─────────────────────────────────────────────────
+function toast(msg){
+  S.toast=msg; clearTimeout(S.toastTimer);
+  S.toastTimer=setTimeout(()=>{S.toast=null; renderToast();},2800);
+  renderToast();
+}
+function renderToast(){
+  document.querySelectorAll(".toast").forEach(e=>e.remove());
+  if(S.toast){ const t=document.createElement("div"); t.className="toast"; t.textContent=S.toast; document.body.appendChild(t); }
+}
+
+// ── SCREENS ───────────────────────────────────────────────
+
+function htmlHeader(){
+  const right = S.screen==="admin"
+    ? `<div class="header-right">
+         <div class="user-badge">${isSA()?'<span class="super-tag">👑 最高</span>':''}${esc(S.currentUser?.name)}</div>
+         <button class="btn-hdr" onclick="doLogout()">登出</button>
+       </div>`
+    : `<div class="header-right">
+         <button class="btn-hdr" onclick="go('login')">🔑 管理員登入</button>
+       </div>`;
+  return `<div class="header"><div class="header-left"><div class="sub">全日型身障機構</div><div class="title">探視 & 返家預約系統</div></div>${right}</div>`;
+}
+
+function htmlStats(){
+  if(S.screen!=="admin")return"";
+  const v=S.bookings.filter(b=>b.type==="探視").length;
+  const h=S.bookings.filter(b=>b.type==="返家").length;
+  return `<div class="stats-bar">
+    <div class="stat-card"><div class="val" style="color:#FCD34D">${S.bookings.length}</div><div class="lbl">預約總筆數</div></div>
+    <div class="stat-card"><div class="val" style="color:#6EE7B7">${v}</div><div class="lbl">探視預約</div></div>
+    <div class="stat-card"><div class="val" style="color:#93C5FD">${h}</div><div class="lbl">返家申請</div></div>
+    <div class="stat-card"><div class="val" style="color:#FDA4AF">${S.notices.length}</div><div class="lbl">公告則數</div></div>
+  </div>`;
+}
+
+function htmlTabs(){
+  const isAdmin = S.screen==="admin";
+  const tabs = isAdmin
+    ? [["bookings","📋 預約紀錄"],["schedule","📆 行程總覽"],["notices","📢 公告管理"]]
+    : [["book","✏️ 我要預約"],["notices","📢 機構公告"]];
+  const cur = isAdmin ? S.adminTab : S.parentTab;
+  const fn  = isAdmin ? "setAdminTab" : "setParentTab";
+  return `<div class="tab-nav">${tabs.map(([k,l])=>`<button class="tab-btn ${cur===k?"active":""}" onclick="${fn}('${k}')">${l}</button>`).join("")}</div>`;
+}
+
+/* ── Parent: Book ── */
+function screenBook(){
+  const tv = S.bookType!=="home";
+  return `<div class="content"><div class="page-title">✏️ 填寫預約申請</div>
+    <div class="page-sub">送出後資料將直接記錄至 Google 試算表</div>
+    <div class="form-wrap">
+      <div class="type-toggle">
+        <button class="type-btn ${tv?"active-visit":""}" onclick="setType('visit')">👁 探視預約</button>
+        <button class="type-btn ${!tv?"active-home":""}" onclick="setType('home')">🏠 返家申請</button>
+      </div>
+      <div class="form-group"><label class="lbl">院生姓名</label><input id="f_child" type="text" placeholder="請輸入院生姓名" value="${esc(S.formData.child)}"></div>
+      <div class="form-group"><label class="lbl">家長 / 陪同者姓名</label><input id="f_parent" type="text" placeholder="請輸入家長或陪同者姓名" value="${esc(S.formData.parentName)}"></div>
+      <div class="form-group"><label class="lbl">${tv?"探視日期":"出發日期"}</label><input id="f_date" type="date" min="${today()}" value="${esc(S.formData.date)}"></div>
+      ${tv?`<div class="form-group">
+        <div class="warn-box">⚠ 午休時段 12:00–13:30 禁止探視，請避開此時段</div>
+        <div class="row-2">
+          <div><label class="lbl">開始時間</label><input id="f_start" type="time" value="${esc(S.formData.startTime)}"></div>
+          <div><label class="lbl">結束時間</label><input id="f_end" type="time" value="${esc(S.formData.endTime)}"></div>
+        </div></div>`
+      :`<div class="form-group"><label class="lbl">預計返院日期</label><input id="f_return" type="date" min="${today()}" value="${esc(S.formData.returnDate)}"></div>`}
+      <div class="form-group"><label class="lbl">備註（選填）</label><textarea id="f_note" placeholder="如需特殊安排請於此說明…">${esc(S.formData.note)}</textarea></div>
+      <div id="book_err"></div>
+      <button class="btn-primary" id="submit_btn" onclick="submitBooking()">送出申請 →</button>
+    </div></div>`;
+}
+
+/* ── Parent: Notices ── */
+function screenParentNotices(){
+  const sorted=[...S.notices].sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
+  if(!sorted.length)return`<div class="content"><div class="empty"><div class="emoji">📢</div>尚無公告</div></div>`;
+  return`<div class="content"><div class="page-title">📢 機構公告</div><div class="page-sub">點擊公告可閱讀完整內容</div>
+    ${sorted.map(n=>`<div class="card notice-card ${n.pinned?"pinned":""}" onclick="openModal('notice',{id:${n.id}})" style="cursor:pointer">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div><div style="font-weight:800;font-size:16px">${n.pinned?"📌 ":""}${esc(n.title)}</div><div style="color:#AAA;font-size:12px;margin-top:3px">${esc(n.date)}</div></div>
+        <span style="color:#CCC;font-size:22px">›</span>
+      </div></div>`).join("")}</div>`;
+}
+
+/* ── Admin: Bookings ── */
+function screenAdminBookings(){
+  let list=[...S.bookings].reverse();
+  if(S.bookFilter!=="all")list=list.filter(b=>b.type===S.bookFilter);
+  return`<div class="content"><div class="page-title">📋 所有預約申請</div>
+    <div class="page-sub">資料即時同步自 Google 試算表</div>
+    <div class="filter-row">
+      ${[["all","全部"],["探視","探視"],["返家","返家"]].map(([k,l])=>`<button class="filter-pill ${S.bookFilter===k?"active":""}" onclick="setFilter('${k}')">${l}</button>`).join("")}
+      <button class="btn-refresh" onclick="refreshBookings()" style="margin-left:auto">${S.loading?"<span class='spin'>⟳</span> 載入中":"🔄 重新整理"}</button>
+    </div>
+    ${S.loading?`<div class="loading"><span class="spin">⟳</span> 載入中…</div>`:""}
+    ${!S.loading&&!list.length?`<div class="empty"><div class="emoji">📭</div>尚無預約紀錄</div>`:""}
+    <div class="card-grid">${list.map(b=>`
+      <div class="card">
+        <div class="booking-meta">${tagHTML(b.type==="探視"?"visit":"home")}<span style="font-weight:800;font-size:16px">${esc(b.child)}</span></div>
+        <hr class="divider">
+        <div class="booking-info">
+          <div>👤 ${esc(b.parentName)}</div>
+          <div>📅 ${esc(b.date)}</div>
+          ${b.startTime?`<div>🕐 ${esc(b.startTime)} – ${esc(b.endTime)}</div>`:""}
+          ${b.returnDate?`<div>🔙 返院：${esc(b.returnDate)}</div>`:""}
+          ${b.note?`<div>📝 ${esc(b.note)}</div>`:""}
+          <div style="color:#CCC;font-size:12px;margin-top:8px">申請時間：${esc(b.appliedAt)}</div>
+        </div>
+      </div>`).join("")}</div></div>`;
+}
+
+/* ── Admin: Schedule ── */
+function screenSchedule(){
+  const grouped={};
+  S.bookings.forEach(b=>{ if(!b.date)return; if(!grouped[b.date])grouped[b.date]=[]; grouped[b.date].push(b); });
+  const dates=Object.keys(grouped).sort();
+  if(!dates.length)return`<div class="content"><div class="empty"><div class="emoji">📆</div>尚無行程記錄</div></div>`;
+  return`<div class="content"><div class="page-title">📆 行程總覽</div><div class="page-sub">依日期彙整所有預約紀錄</div>
+    ${dates.map(d=>`<div class="day-group"><div class="day-label">📅 ${fmtDate(d)}</div>
+      ${grouped[d].map(b=>`<div class="sched-row">
+        ${tagHTML(b.type==="探視"?"visit":"home")}
+        <span style="font-weight:700">${esc(b.child)}</span>
+        <span style="color:#888;font-size:13px">（${esc(b.parentName)}）</span>
+        <span class="sched-time">${b.startTime?`${b.startTime}–${b.endTime}`:"全天"}</span>
+      </div>`).join("")}</div>`).join("")}</div>`;
+}
+
+/* ── Admin: Notices ── */
+function screenAdminNotices(){
+  const sorted=[...S.notices].sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
+  return`<div class="content"><div class="page-title">📢 公告管理</div><div class="page-sub">新增、置頂或刪除公告，即時同步至家長頁面</div>
+    <button class="btn-primary" style="max-width:180px;margin-bottom:20px" onclick="openModal('newNotice',{})">+ 新增公告</button>
+    ${!sorted.length?`<div class="empty"><div class="emoji">📢</div>尚無公告</div>`:""}
+    ${sorted.map(n=>`<div class="card notice-card ${n.pinned?"pinned":""}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+        <div style="flex:1"><div style="font-weight:800;font-size:16px">${n.pinned?"📌 ":""}${esc(n.title)}</div><div style="color:#AAA;font-size:12px;margin-top:3px">${esc(n.date)}</div></div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn-pin" title="${n.pinned?"取消置頂":"置頂"}" onclick="togglePin(${n.id},${!n.pinned})">${n.pinned?"📌":"📍"}</button>
+          <button class="btn-sm btn-del" onclick="doDeleteNotice(${n.id})">🗑 刪除</button>
+        </div>
+      </div>
+      <div class="notice-content">${esc(n.content.length>180?n.content.slice(0,180)+"…":n.content)}</div>
+    </div>`).join("")}</div>`;
+}
+
+/* ── Login ── */
+function screenLogin(){
+  return`<div class="auth-wrap"><div class="auth-card">
+    <div class="auth-icon">🔐</div>
+    <div class="auth-title">管理員登入</div>
+    <div class="auth-sub">請輸入帳號與密碼</div>
+    <div class="form-group"><label class="lbl">帳號</label><input id="l_user" type="text" placeholder="請輸入帳號" autocomplete="username"></div>
+    <div class="form-group"><label class="lbl">密碼</label>
+      <div class="pw-wrap">
+        <input id="l_pw" type="password" placeholder="請輸入密碼" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+        <button class="pw-toggle" type="button" onclick="togglePw()">👁</button>
+      </div>
+    </div>
+    <div id="login_err"></div>
+    <button class="btn-primary" id="login_btn" onclick="doLogin()">登入管理系統</button>
+    <button class="btn-ghost" onclick="go('parent')">← 返回家長頁面</button>
+  </div></div>`;
+}
+
+/* ── Modals ── */
+function htmlModal(){
+  if(!S.modal)return"";
+  const{type,data}=S.modal;
+
+  if(type==="notice"){
+    const n=S.notices.find(x=>String(x.id)===String(data.id));
+    if(!n)return"";
+    return`<div class="modal-bg" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <div class="modal-head"><h3>${n.pinned?"📌 ":""}${esc(n.title)}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+        <div class="modal-body">
+          <div style="color:#AAA;font-size:13px;margin-bottom:14px">發布日期：${esc(n.date)}</div>
+          <div style="background:#FAFAFA;border-radius:10px;padding:16px;font-size:14px;line-height:2;color:#333;white-space:pre-line">${esc(n.content)}</div>
+        </div>
+      </div></div>`;
+  }
+
+  if(type==="newNotice"){
+    return`<div class="modal-bg" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <div class="modal-head"><h3>新增公告</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+        <div class="modal-body">
+          <div class="form-group"><label class="lbl">公告標題</label><input id="n_title" type="text" placeholder="請輸入公告標題"></div>
+          <div class="form-group"><label class="lbl">公告內容</label><textarea id="n_content" placeholder="請輸入公告內容…" style="min-height:140px"></textarea></div>
+          <div id="notice_err"></div>
+          <button class="btn-primary" onclick="submitNotice()">發布公告</button>
+        </div>
+      </div></div>`;
+  }
+  return"";
+}
+
+// ── Render ────────────────────────────────────────────────
+function render(){
+  let body="";
+  if(S.screen==="login"){
+    body=htmlHeader()+screenLogin();
+  } else {
+    let content="";
+    if(S.screen==="parent"){
+      if(S.parentTab==="book")    content=screenBook();
+      if(S.parentTab==="notices") content=screenParentNotices();
+    } else {
+      if(S.adminTab==="bookings") content=screenAdminBookings();
+      if(S.adminTab==="schedule") content=screenSchedule();
+      if(S.adminTab==="notices")  content=screenAdminNotices();
+    }
+    body=htmlHeader()+htmlStats()+htmlTabs()+content;
+  }
+  document.getElementById("app").innerHTML=body+htmlModal();
+}
+
+// ── Actions ───────────────────────────────────────────────
+function go(s){ S.screen=s; render(); }
+function setType(t){ saveForm(); S.bookType=t; render(); }
+function setFilter(f){ S.bookFilter=f; render(); }
+function setParentTab(t){ S.parentTab=t; if(t==="notices")loadNotices(); render(); }
+function setAdminTab(t){ S.adminTab=t; if(t==="bookings"||t==="schedule")refreshBookings(); else render(); }
+function openModal(t,d){ S.modal={type:t,data:d}; render(); }
+function closeModal(){ S.modal=null; render(); }
+function doLogout(){ S.currentUser=null; S.screen="parent"; S.bookings=[]; render(); }
+
+function saveForm(){
+  const get=id=>document.getElementById(id)?.value||"";
+  S.formData={child:get("f_child"),parentName:get("f_parent"),date:get("f_date"),startTime:get("f_start"),endTime:get("f_end"),returnDate:get("f_return"),note:get("f_note")};
+}
+
+async function submitBooking(){
+  saveForm();
+  const{child,parentName:par,date,startTime:st,endTime:et,returnDate:rd,note}=S.formData;
+  const type=S.bookType;
+  let err="";
+  if(!child.trim())       err="請填寫院生姓名";
+  else if(!par.trim())    err="請填寫家長姓名";
+  else if(!date)          err="請選擇日期";
+  else if(!isFuture(date))err="日期必須為今天或未來";
+  else if(type==="visit"){
+    if(!st||!et)           err="請填寫探視時間";
+    else if(isLunch(st)||isLunch(et)) err="探視時間不可在午休時段（12:00–13:30）";
+    else{ const[sh,sm]=st.split(":").map(Number),[eh,em]=et.split(":").map(Number); if(sh*60+sm>=eh*60+em)err="結束時間須晚於開始時間"; }
+  } else if(!rd) err="請填寫預計返院日期";
+  else if(rd<date) err="返院日期不可早於出發日期";
+
+  const errEl=document.getElementById("book_err");
+  if(err){ if(errEl)errEl.innerHTML=`<div class="error-msg">⚠ ${esc(err)}</div>`; return; }
+  if(errEl)errEl.innerHTML="";
+
+  const btn=document.getElementById("submit_btn");
+  if(btn){btn.disabled=true;btn.textContent="送出中…";}
+
+  const res=await gasGet({action:"addBooking",type,child,parentName:par,date,startTime:st,endTime:et,returnDate:rd,note});
+
+  if(btn){btn.disabled=false;btn.textContent="送出申請 →";}
+  if(res&&res.ok){
+    S.formData={child:"",parentName:"",date:"",startTime:"",endTime:"",returnDate:"",note:""};
+    S.bookType="visit";
+    toast("✅ 申請已送出，已記錄至 Google 試算表！");
+    await loadNotices();
+    render();
+  } else {
+    if(errEl)errEl.innerHTML=`<div class="error-msg">⚠ 送出失敗，請確認網路或稍後再試</div>`;
+  }
+}
+
+async function doLogin(){
+  const user=document.getElementById("l_user")?.value.trim();
+  const pw=document.getElementById("l_pw")?.value;
+  const errEl=document.getElementById("login_err");
+  const btn=document.getElementById("login_btn");
+  if(!user||!pw){if(errEl)errEl.innerHTML=`<div class="error-msg">⚠ 請填寫帳號與密碼</div>`;return;}
+  if(btn){btn.disabled=true;btn.textContent="登入中…";}
+  const r=await gasGet({action:"login",username:user,password:pw});
+  if(btn){btn.disabled=false;btn.textContent="登入管理系統";}
+  if(r&&r.ok){
+    S.currentUser=r.user; S.screen="admin"; S.adminTab="bookings";
+    await loadAll(); render();
+  } else {
+    if(errEl)errEl.innerHTML=`<div class="error-msg">⚠ 帳號或密碼錯誤</div>`;
+  }
+}
+
+async function submitNotice(){
+  const title=document.getElementById("n_title")?.value.trim();
+  const content=document.getElementById("n_content")?.value.trim();
+  const errEl=document.getElementById("notice_err");
+  if(!title||!content){if(errEl)errEl.innerHTML=`<div class="error-msg">⚠ 請填寫標題與內容</div>`;return;}
+  const r=await gasGet({action:"addNotice",title,content,pinned:"false"});
+  if(r&&r.ok){closeModal();toast("📢 公告已發布");await loadNotices();render();}
+}
+
+async function doDeleteNotice(id){
+  if(!confirm("確定要刪除這則公告嗎？"))return;
+  const r=await gasGet({action:"deleteNotice",id});
+  if(r&&r.ok){toast("🗑 公告已刪除");await loadNotices();render();}
+}
+
+async function togglePin(id,pinned){
+  const r=await gasGet({action:"pinNotice",id,pinned:String(pinned)});
+  if(r&&r.ok){toast(pinned?"📌 已置頂":"已取消置頂");await loadNotices();render();}
+}
+
+async function refreshBookings(){
+  S.loading=true; render();
+  await loadBookings();
+  S.loading=false; render();
+  toast("🔄 資料已更新");
+}
+
+function togglePw(){
+  const el=document.getElementById("l_pw");
+  const btn=document.querySelector(".pw-toggle");
+  if(!el)return;
+  el.type=el.type==="password"?"text":"password";
+  if(btn)btn.textContent=el.type==="password"?"👁":"🙈";
+}
+
+// ── Init ──────────────────────────────────────────────────
+render();
+loadAll();
+</script>
+</body>
+</html>
