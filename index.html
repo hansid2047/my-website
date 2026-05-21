@@ -184,7 +184,7 @@ function jsonp(params) {
   });
 }
 
-// ── POST（用於寫入，透過 no-cors fetch → 改以 GET+JSONP 代替） ──
+// ── POST（用於寫入，透過 no-cors fetch     改以 GET+JSONP 代替） ──
 // GAS doGet 同時支援讀寫操作（傳入 action 參數即可）
 async function gasGet(params) {
   try { return await jsonp(params); }
@@ -205,7 +205,7 @@ const S = {
   modal: null,
   bookFilter: "all",
   bookType: "visit",
-  formData: { child:"", parentName:"", date:"", startTime:"", endTime:"", returnDate:"", note:"" },
+  formData: { child:"", parentName:"", date:"", startTime:"", endTime:"", returnDate:"", returnTime:"", returnEndTime:"", note:"" },
 };
 
 // ── Data load ─────────────────────────────────────────────
@@ -301,10 +301,10 @@ function screenBook(){
       ${tv?`<div class="form-group">
         <div class="warn-box">⚠ 午休時段 12:00–13:30 禁止探視，請避開此時段</div>
         <div class="row-2">
-          <div><label class="lbl">開始時間</label><input id="f_start" type="time" value="${esc(S.formData.startTime)}"></div>
-          <div><label class="lbl">結束時間</label><input id="f_end" type="time" value="${esc(S.formData.endTime)}"></div>
+          <div><label class="lbl">開始時間</label><input id="f_start" type="time" step="900" value="${esc(S.formData.startTime)}"></div>
+          <div><label class="lbl">結束時間</label><input id="f_end" type="time" step="900" value="${esc(S.formData.endTime)}"></div>
         </div></div>`
-      :`<div class="form-group"><label class="lbl">預計返院日期</label><input id="f_return" type="date" min="${today()}" value="${esc(S.formData.returnDate)}"></div>`}
+      :`<div class="form-group"><label class="lbl">出發時間</label><input id="f_start" type="time" step="900" value="${esc(S.formData.startTime)}"></div><div class="form-group"><label class="lbl">預計返院日期</label><input id="f_return" type="date" min="${today()}" value="${esc(S.formData.returnDate)}"></div><div class="form-group"><label class="lbl">返院時間（預計）</label><input id="f_end" type="time" step="900" value="${esc(S.formData.endTime)}"></div>`}
       <div class="form-group"><label class="lbl">備註（選填）</label><textarea id="f_note" placeholder="如需特殊安排請於此說明…">${esc(S.formData.note)}</textarea></div>
       <div id="book_err"></div>
       <button class="btn-primary" id="submit_btn" onclick="submitBooking()">送出申請 →</button>
@@ -484,8 +484,11 @@ async function submitBooking(){
     if(!st||!et)           err="請填寫探視時間";
     else if(isLunch(st)||isLunch(et)) err="探視時間不可在午休時段（12:00–13:30）";
     else{ const[sh,sm]=st.split(":").map(Number),[eh,em]=et.split(":").map(Number); if(sh*60+sm>=eh*60+em)err="結束時間須晚於開始時間"; }
-  } else if(!rd) err="請填寫預計返院日期";
-  else if(rd<date) err="返院日期不可早於出發日期";
+  } else {
+    if(!st||!et)           err="請填寫出發與返院時間";
+    else if(!rd)           err="請填寫預計返院日期";
+    else if(rd<date)       err="返院日期不可早於出發日期";
+  }
 
   const errEl=document.getElementById("book_err");
   if(err){ if(errEl)errEl.innerHTML=`<div class="error-msg">⚠ ${esc(err)}</div>`; return; }
